@@ -2,20 +2,19 @@ namespace MyGame.Core
 {
     public readonly struct InventoryOperationResult
     {
-        public bool Success { get; }
-        public int RemainingAmount { get; }
+        public bool IsSuccess { get; }
+        public int RejectedAmount { get; }
         public string ErrorMessage { get; }
 
-        public InventoryOperationResult(bool success, int remainingAmount = 0, string errorMessage = null)
+        public InventoryOperationResult(bool isSuccess, int rejectedAmount = 0, string errorMessage = null)
         {
-            Success = success;
-            RemainingAmount = remainingAmount;
+            IsSuccess = isSuccess;
+            RejectedAmount = rejectedAmount;
             ErrorMessage = errorMessage;
         }
 
-        public static InventoryOperationResult Ok(int remainingAmount = 0) => new InventoryOperationResult(true, remainingAmount);
+        public static InventoryOperationResult Success() => new InventoryOperationResult(true, 0, null);
 
-        public static InventoryOperationResult Fail(string errorMessage, int remainingAmount = 0) => new InventoryOperationResult(false, remainingAmount, errorMessage);
+        public static InventoryOperationResult Failure(int rejectedAmount, string errorMessage) => new InventoryOperationResult(false, rejectedAmount, errorMessage);
     }
 }
-
