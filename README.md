@@ -1,9 +1,10 @@
 # Advanced Inventory & Crafting System
 
+[![Unity CI - Automated Tests](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/unity-tests.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/unity-tests.yml)
 [![Unity 6](https://img.shields.io/badge/Unity-6000.5.9f1-blue.svg?logo=unity)](https://unity.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2F%20Brain--State-emerald.svg)](https://github.com/)
 [![SDD & TDD](https://img.shields.io/badge/Methodology-SDD%20%26%20TDD-purple.svg)](https://github.com/)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-orange.svg?logo=githubactions)](https://github.com/)
+[![UI](https://img.shields.io/badge/UI-UI%20Toolkit%20%2F%20MVP-blueviolet.svg)](https://docs.unity.com/)
 
 A modular, extensible **Inventory and Crafting System** built for Unity using **Clean Architecture**, **Specification-Driven Development (SDD)**, and **Test-Driven Development (TDD)**.
 
@@ -16,7 +17,7 @@ This project serves as a reference implementation of enterprise-grade software e
 1. **Clean Architecture & Assembly Decoupling:**
    - **`MyGame.Core` (Pure C#):** The domain and business logic have **zero dependencies** on `UnityEngine`, `MonoBehaviour`, or `ScriptableObject`. Business logic runs anywhere (.NET CLI, Unity, Cloud backends) without engine overhead.
    - **`MyGame.Core.Specs` (NUnit Tests):** Pure domain unit test suite designed for sub-second test execution.
-   - **`MyGame.UnityView` (Presentation & Bridge):** Unity-specific view layer handling `MonoBehaviour` bindings, UI Toolkit / Canvas rendering, audio, and the New Input System. Reads state from Core while Core remains 100% unaware of Unity.
+   - **`MyGame.UnityView` (Presentation & Bridge):** Unity-specific view layer using **UI Toolkit (UXML/USS)** and the **MVP pattern**. Reads state from Core while Core remains 100% unaware of Unity.
 
 2. **Brain / State Pattern:**
    - **State (`InventoryState`):** Anemic data structures holding state (slots, capacity, item instances). Serializable and snapshot-friendly for save/load or networking.
@@ -28,7 +29,7 @@ This project serves as a reference implementation of enterprise-grade software e
    - Tests are authored in the **Red Phase** against Gherkin criteria before implementing minimal passing code (**Green Phase**), followed by refactoring.
 
 4. **Automated CI/CD with GitHub Actions:**
-   - Automated workflows run unit tests and code analysis on pull requests to ensure regressions are caught instantly.
+   - Automated workflows run EditMode unit tests on every push and pull request via [GameCI](https://game.ci/).
 
 ---
 
@@ -36,10 +37,11 @@ This project serves as a reference implementation of enterprise-grade software e
 
 ```mermaid
 graph TD
-    subgraph UnityView Layer [Unity Presentation Layer]
-        UV_UI[Inventory UI / HUD]
-        UV_MB[InventoryView Component]
-        UV_Input[Input System Bridge]
+    subgraph UnityView Layer [Unity Presentation Layer (MVP + UI Toolkit)]
+        UV_Boot[GameBootstrapper - Composition Root]
+        UV_UI[Inventory UI - UXML / USS]
+        UV_View[InventoryView MonoBehaviour]
+        UV_Pres[InventoryPresenter Pure C#]
     end
 
     subgraph Core Layer [Pure C# Domain Layer]
@@ -47,21 +49,24 @@ graph TD
         Core_State[InventoryState]
         Core_Slot[InventorySlot]
         Core_Item[ItemDefinition]
-        Core_Rules[Inventory Rules & Operations]
+        Core_DB[ItemDatabase / IItemDatabase]
     end
 
     subgraph Specs Layer [Test Suite]
         Specs_Tests[NUnit Specifications]
     end
 
-    UV_MB -->|Observes & Commands| Core_Brain
-    UV_MB -->|Reads State| Core_State
+    UV_Boot -->|Instantiates & Wires| UV_Pres
+    UV_Boot -->|Instantiates| Core_Brain
+    UV_View -->|User Events| UV_Pres
+    UV_Pres -->|Commands & Queries| Core_Brain
+    UV_Pres -->|Updates| UV_View
     Core_Brain -->|Manipulates| Core_State
+    Core_Brain -->|Resolves Items| Core_DB
     Core_State --> Core_Slot
     Core_Slot --> Core_Item
-    Core_Brain --> Core_Rules
-    Specs_Tests -->|Validates| Core_Brain
-    Specs_Tests -->|Inspects| Core_State
+    Specs_Tests -->|Validates Specifications| Core_Brain
+    Specs_Tests -->|Inspects State| Core_State
 ```
 
 ---
@@ -77,8 +82,8 @@ Feature: Item Stacking Limits
     And the stack limit for potions per slot is 100
     When the player attempts to add 5 "Health Potion" to this inventory
     Then the current slot should contain 100 potions
-    And the inventory should create a new slot containing 2 potions
-    But if there are no empty slots, the system should return an "Inventory Full" error and reject the remaining 2 potions.
+    And the inventory should create a new slot containing 2 potions (or overflow remainder)
+    But if there are no empty slots, the system should return an "Inventory Full" error and reject the remaining potions.
 ```
 
 ---
@@ -89,7 +94,7 @@ Feature: Item Stacking Limits
 |---|---|---|---|
 | `Assets/Scripts/Core` | `MyGame.Core` | Pure .NET (`System`, `System.Collections.Generic`, `LINQ`) | Domain logic, rules, brain controller, and state |
 | `Assets/Scripts/Specs` | `MyGame.Core.Specs` | `MyGame.Core`, `nunit.framework` | Fast unit test specifications matching Gherkin scenarios |
-| `Assets/Scripts/UnityView` | `MyGame.UnityView` | `MyGame.Core`, `UnityEngine`, UI Packages | Unity MonoBehaviours, View models, UI binders, audio, visual fx |
+| `Assets/Scripts/UnityView` | `MyGame.UnityView` | `MyGame.Core`, `UnityEngine`, UI Toolkit (`UIElements`) | MVP View components, Presenter, Bootstrapper, UXML layouts, USS stylesheets |
 
 ---
 
@@ -99,5 +104,20 @@ Feature: Item Stacking Limits
 2. **Red Phase:** Write NUnit tests asserting the scenario specifications (fails with `NotImplementedException` or assertion error).
 3. **Green Phase:** Write the minimum necessary domain logic in `MyGame.Core` to pass tests.
 4. **Refactor:** Clean code, optimize data structures, enforce SOLID principles.
-5. **View Integration:** Wire up Unity UI Toolkit / MonoBehaviours to listen to state events.
+5. **View Integration:** Wire up UI Toolkit UXML/USS and Presenter in `MyGame.UnityView`.
 6. **Continuous Integration:** Run automated test runners on GitHub Actions.
+
+---
+
+## 🚀 CI/CD Pipeline Configuration
+
+The workflow is defined in [`.github/workflows/unity-tests.yml`](.github/workflows/unity-tests.yml).
+
+### Setting up GitHub Secrets:
+To enable automated testing with GameCI on your repository:
+1. Navigate to **Settings > Secrets and variables > Actions** in your GitHub repository.
+2. Add the following secrets:
+   - `UNITY_LICENSE`: (Optional/Recommended for personal license activation via `.ulf` file).
+   - `UNITY_EMAIL`: Your Unity account email.
+   - `UNITY_PASSWORD`: Your Unity account password.
+3. Update the badge link at the top of this `README.md` by replacing `YOUR_USERNAME/YOUR_REPO_NAME` with your GitHub username and repository name.
