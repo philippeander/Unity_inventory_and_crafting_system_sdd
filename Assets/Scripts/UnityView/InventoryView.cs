@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using MyGame.Core;
 
 namespace MyGame.UnityView
 {
@@ -13,88 +12,63 @@ namespace MyGame.UnityView
     [RequireComponent(typeof(UIDocument))]
     public class InventoryView : MonoBehaviour, IInventoryView
     {
-        [Header("Bootstrap Configuration (Optional)")]
-        [SerializeField] private bool _autoBootstrap = true;
-        [SerializeField] private int _initialSlots = 5;
-        [SerializeField] private int _potionMaxStack = 100;
-
         public event Action<string, int> OnAddButtonClicked;
 
         private UIDocument _uiDocument;
         private Button _btnAddPotion;
         private Label _lblError;
+        private VisualElement _slotsContainer;
         private readonly Dictionary<int, Label> _slotLabels = new Dictionary<int, Label>();
-        private InventoryPresenter _presenter;
+        private int _configuredSlotCount = 0;
 
         private void Awake()
         {
             _uiDocument = GetComponent<UIDocument>();
         }
 
-        private void Start()
-        {
-            if (_autoBootstrap && _presenter == null)
-            {
-                var database = new ItemDatabase();
-                database.RegisterItem(new ItemDefinition("Health Potion", _potionMaxStack));
-
-                var state = new InventoryState(_initialSlots);
-                var brain = new InventoryBrain(state, database);
-                _presenter = new InventoryPresenter(this, brain);
-            }
-        }
-
         private void OnEnable()
         {
-            if (_uiDocument == null)
-            {
-                _uiDocument = GetComponent<UIDocument>();
-            }
+            BindVisualElements();
+        }
 
-            var root = _uiDocument?.rootVisualElement;
+        private void OnDisable()
+        {
+            UnbindVisualElements();
+        }
+
+        public void InitializeSlots(int slotCount)
+        {
+            _configuredSlotCount = slotCount;
+
+            var root = GetRootVisualElement();
             if (root == null)
             {
                 return;
             }
 
-            // Query Add Potion button
-            _btnAddPotion = root.Q<Button>("btnAddPotion");
-            if (_btnAddPotion != null)
+            _slotsContainer = root.Q<VisualElement>("slotsContainer") ?? root.Q<VisualElement>(className: "slots-container");
+            if (_slotsContainer == null)
             {
-                _btnAddPotion.clicked += HandleAddPotionClicked;
+                return;
             }
 
-            // Query Error label
-            _lblError = root.Q<Label>("lblError");
-            ClearError();
-
-            // Cache slot labels if present in UXML
+            _slotsContainer.Clear();
             _slotLabels.Clear();
-            for (int i = 0; i < 20; i++)
+
+            for (int i = 0; i < slotCount; i++)
             {
-                var slotLabel = root.Q<Label>($"slot-label-{i}");
-                if (slotLabel != null)
-                {
-                    _slotLabels[i] = slotLabel;
-                }
+                var slotBox = new VisualElement();
+                slotBox.AddToClassList("slot-box");
+                slotBox.name = $"slot-box-{i}";
+
+                var slotLabel = new Label($"Slot {i + 1}: [Empty]");
+                slotLabel.AddToClassList("slot-label");
+                slotLabel.name = $"slot-label-{i}";
+
+                slotBox.Add(slotLabel);
+                _slotsContainer.Add(slotBox);
+                _slotLabels[i] = slotLabel;
             }
-        }
-
-        private void OnDisable()
-        {
-            if (_btnAddPotion != null)
-            {
-                _btnAddPotion.clicked -= HandleAddPotionClicked;
-            }
-
-            _presenter?.Dispose();
-            _presenter = null;
-        }
-
-        private void HandleAddPotionClicked()
-        {
-            // Simulate adding 5 Health Potions per click matching the Gherkin scenario
-            OnAddButtonClicked?.Invoke("Health Potion", 5);
         }
 
         public void UpdateSlot(int slotIndex, string itemId, int amount)
@@ -102,19 +76,19 @@ namespace MyGame.UnityView
             if (_slotLabels.TryGetValue(slotIndex, out var label))
             {
                 label.text = string.IsNullOrEmpty(itemId) || amount <= 0
-                    ? $"Slot {slotIndex}: [Empty]"
-                    : $"Slot {slotIndex}: {itemId} x{amount}";
+                    ? $"Slot {slotIndex + 1}: [Empty]"
+                    : $"Slot {slotIndex + 1}: {itemId} x{amount}";
             }
             else
             {
-                var root = _uiDocument?.rootVisualElement;
+                var root = GetRootVisualElement();
                 var dynamicLabel = root?.Q<Label>($"slot-label-{slotIndex}");
                 if (dynamicLabel != null)
                 {
                     _slotLabels[slotIndex] = dynamicLabel;
                     dynamicLabel.text = string.IsNullOrEmpty(itemId) || amount <= 0
-                        ? $"Slot {slotIndex}: [Empty]"
-                        : $"Slot {slotIndex}: {itemId} x{amount}";
+                        ? $"Slot {slotIndex + 1}: [Empty]"
+                        : $"Slot {slotIndex + 1}: {itemId} x{amount}";
                 }
             }
         }
@@ -136,6 +110,52 @@ namespace MyGame.UnityView
                 _lblError.style.display = DisplayStyle.None;
             }
         }
+
+        private VisualElement GetRootVisualElement()
+        {
+            if (_uiDocument == null)
+            {
+                _uiDocument = GetComponent<UIDocument>();
+            }
+
+            return _uiDocument?.rootVisualElement;
+        }
+
+        private void BindVisualElements()
+        {
+            var root = GetRootVisualElement();
+            if (root == null)
+            {
+                return;
+            }
+
+            _btnAddPotion = root.Q<Button>("btnAddPotion");
+            if (_btnAddPotion != null)
+            {
+                _btnAddPotion.clicked -= HandleAddPotionClicked;
+                _btnAddPotion.clicked += HandleAddPotionClicked;
+            }
+
+            _lblError = root.Q<Label>("lblError");
+            ClearError();
+
+            if (_configuredSlotCount > 0)
+            {
+                InitializeSlots(_configuredSlotCount);
+            }
+        }
+
+        private void UnbindVisualElements()
+        {
+            if (_btnAddPotion != null)
+            {
+                _btnAddPotion.clicked -= HandleAddPotionClicked;
+            }
+        }
+
+        private void HandleAddPotionClicked()
+        {
+            OnAddButtonClicked?.Invoke("Health Potion", 5);
+        }
     }
 }
-

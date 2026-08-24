@@ -6,9 +6,9 @@ namespace MyGame.UnityView
     {
         event Action<string, int> OnAddButtonClicked;
 
+        void InitializeSlots(int slotCount);
         void UpdateSlot(int slotIndex, string itemId, int amount);
         void ShowError(string message);
         void ClearError();
     }
 }
-

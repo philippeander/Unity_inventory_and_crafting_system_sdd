@@ -15,11 +15,16 @@ namespace MyGame.UnityView
         public IInventoryView View => _view;
         public InventoryBrain Brain => _brain;
 
-        public InventoryPresenter(IInventoryView view, InventoryBrain brain)
+        public InventoryPresenter(IInventoryView view, InventoryBrain brain) : this(view, brain, null)
+        {
+        }
+
+        public InventoryPresenter(IInventoryView view, InventoryBrain brain, InventoryState state)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _brain = brain ?? throw new ArgumentNullException(nameof(brain));
 
+            _view.InitializeSlots(_brain.State.MaxSlots);
             _view.OnAddButtonClicked += HandleAddButtonClicked;
             RefreshView();
         }
@@ -47,7 +52,6 @@ namespace MyGame.UnityView
             }
             else
             {
-                // Fallback default item definition (e.g. stack size 100)
                 var itemDefinition = new ItemDefinition(itemId, 100);
                 result = _brain.AddItem(itemDefinition, amount);
             }
@@ -73,4 +77,3 @@ namespace MyGame.UnityView
         }
     }
 }
-
