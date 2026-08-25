@@ -1,7 +1,8 @@
 # Advanced Inventory & Crafting System
 
 [![Unity CI - Automated Tests](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-tests.yml/badge.svg)](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-tests.yml)
-[![Unity CD - WebGL Build](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-build.yml/badge.svg)](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-build.yml)
+[![Unity CD - WebGL Build & Deploy](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-build.yml/badge.svg)](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-build.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?logo=github)](https://philippeander.github.io/Unity_inventory_and_crafting_system_sdd/)
 [![Unity 6](https://img.shields.io/badge/Unity-6000.5.9f1-blue.svg?logo=unity)](https://unity.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2F%20Brain--State-emerald.svg)](https://github.com/)
 [![SDD & TDD](https://img.shields.io/badge/Methodology-SDD%20%26%20TDD-purple.svg)](https://github.com/)
@@ -31,7 +32,7 @@ This project serves as a reference implementation of enterprise-grade software e
 
 4. **Automated CI/CD with GitHub Actions:**
    - **Continuous Integration (CI):** Automated workflows run EditMode unit tests on every push and pull request via [GameCI](https://game.ci/).
-   - **Continuous Deployment (CD):** Builds a deployable WebGL player automatically on pushes to `main` (gated by test passage).
+   - **Continuous Deployment (CD):** Builds and automatically deploys the WebGL player directly to **GitHub Pages** on pushes to `main` (gated by test passage).
 
 ---
 
@@ -107,19 +108,18 @@ Feature: Item Stacking Limits
 3. **Green Phase:** Write the minimum necessary domain logic in `MyGame.Core` to pass tests.
 4. **Refactor:** Clean code, optimize data structures, enforce SOLID principles.
 5. **View Integration:** Wire up UI Toolkit UXML/USS and Presenter in `MyGame.UnityView`.
-6. **Continuous Integration & Deployment:** Automated tests and WebGL builds on GitHub Actions.
+6. **Continuous Integration & Deployment:** Automated tests and WebGL builds deployed to GitHub Pages.
 
 ---
 
 ## 🚀 CI/CD Pipeline Configuration
 
 - **CI Workflow:** [`.github/workflows/unity-tests.yml`](.github/workflows/unity-tests.yml) — Runs EditMode tests on pull requests & branches.
-- **CD Workflow:** [`.github/workflows/unity-build.yml`](.github/workflows/unity-build.yml) — Gated WebGL build triggered on `main` branch pushes & manual dispatch.
+- **CD Workflow:** [`.github/workflows/unity-build.yml`](.github/workflows/unity-build.yml) — Gated WebGL build & automated GitHub Pages deployment triggered on `main`/`master` pushes.
 
-### Setting up GitHub Secrets:
-To enable automated testing and builds with GameCI on your repository:
-1. Navigate to **Settings > Secrets and variables > Actions** in your GitHub repository.
-2. Add the following secrets:
+### Setting up GitHub Secrets & GitHub Pages:
+1. **GitHub Secrets:** Navigate to **Settings > Secrets and variables > Actions** in your GitHub repository and add:
    - `UNITY_LICENSE`: (Optional/Recommended for personal license activation via `.ulf` file).
    - `UNITY_EMAIL`: Your Unity account email.
    - `UNITY_PASSWORD`: Your Unity account password.
+2. **GitHub Pages:** Navigate to **Settings > Pages** in your repository and configure **Build and deployment > Source** to **Deploy from a branch (`gh-pages` / `root`)**.

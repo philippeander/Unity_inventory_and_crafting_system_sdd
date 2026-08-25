@@ -1,9 +1,10 @@
-name: Unity CD - Automated WebGL Build
+name: Unity CD - Automated WebGL Build & Deploy
 
 on:
   push:
     branches:
       - main
+      - master
   workflow_dispatch:
 
 concurrency:
@@ -41,11 +42,13 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: WebGL Pre-Build Test Validation
 
-  # Job 2: Build WebGL (only executed if tests pass)
+  # Job 2: Build WebGL & Deploy to GitHub Pages (only executed if tests pass)
   build-webgl:
-    name: Build WebGL
+    name: Build & Deploy WebGL
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -70,9 +73,24 @@ jobs:
           targetPlatform: WebGL
           buildsPath: build
 
+      # Normalize build output folder structure if nested
+      - name: Prepare WebGL Output Directory
+        run: |
+          if [ -d "build/WebGL/WebGL" ] && [ -f "build/WebGL/WebGL/index.html" ]; then
+            echo "Moving nested WebGL build files to root of build/WebGL"
+            cp -r build/WebGL/WebGL/* build/WebGL/ || true
+          fi
+
       - name: Upload WebGL Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: WebGL-Build
           path: build/WebGL
 
+      # Deploy to GitHub Pages (only on main or master)
+      - name: Deploy WebGL to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/WebGL
