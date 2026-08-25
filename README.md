@@ -1,6 +1,6 @@
 # Advanced Inventory & Crafting System
 
-[![Unity CI - Automated Tests](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/unity-tests.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/unity-tests.yml)
+[![Unity CI - Automated Tests](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-tests.yml/badge.svg)](https://github.com/philippeander/Unity_inventory_and_crafting_system_sdd/actions/workflows/unity-tests.yml)
 [![Unity 6](https://img.shields.io/badge/Unity-6000.5.9f1-blue.svg?logo=unity)](https://unity.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2F%20Brain--State-emerald.svg)](https://github.com/)
 [![SDD & TDD](https://img.shields.io/badge/Methodology-SDD%20%26%20TDD-purple.svg)](https://github.com/)
