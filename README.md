@@ -37,14 +37,14 @@ This project serves as a reference implementation of enterprise-grade software e
 
 ```mermaid
 graph TD
-    subgraph UnityView Layer [Unity Presentation Layer (MVP + UI Toolkit)]
+    subgraph UnityView Layer ["Unity Presentation Layer (MVP + UI Toolkit)"]
         UV_Boot[GameBootstrapper - Composition Root]
         UV_UI[Inventory UI - UXML / USS]
         UV_View[InventoryView MonoBehaviour]
         UV_Pres[InventoryPresenter Pure C#]
     end
 
-    subgraph Core Layer [Pure C# Domain Layer]
+    subgraph Core Layer ["Pure C# Domain Layer"]
         Core_Brain[InventoryBrain]
         Core_State[InventoryState]
         Core_Slot[InventorySlot]
@@ -52,7 +52,7 @@ graph TD
         Core_DB[ItemDatabase / IItemDatabase]
     end
 
-    subgraph Specs Layer [Test Suite]
+    subgraph Specs Layer ["Test Suite"]
         Specs_Tests[NUnit Specifications]
     end
 
