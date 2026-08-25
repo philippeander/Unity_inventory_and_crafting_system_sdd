@@ -73,24 +73,16 @@ jobs:
           targetPlatform: WebGL
           buildsPath: build
 
-      # Normalize build output folder structure if nested
-      - name: Prepare WebGL Output Directory
-        run: |
-          if [ -d "build/WebGL/WebGL" ] && [ -f "build/WebGL/WebGL/index.html" ]; then
-            echo "Moving nested WebGL build files to root of build/WebGL"
-            cp -r build/WebGL/WebGL/* build/WebGL/ || true
-          fi
-
       - name: Upload WebGL Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: WebGL-Build
-          path: build/WebGL
+          path: build/WebGL/WebGL
 
-      # Deploy to GitHub Pages (only on main or master)
+      # Deploy to GitHub Pages (exact directory containing index.html)
       - name: Deploy WebGL to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/WebGL
+          publish_dir: ./build/WebGL/WebGL
