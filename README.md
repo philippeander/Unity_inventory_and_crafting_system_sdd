@@ -112,14 +112,28 @@ Feature: Item Stacking Limits
 
 ---
 
-## 🚀 CI/CD Pipeline Configuration
+## 🚀 DevOps & Automation
+
+This project features a fully automated DevOps pipeline using **GitHub Actions** and **GameCI** that manages the entire lifecycle from commit validation to web deployment:
+
+- **Automated Quality Gate (CI):** Every push and pull request runs automated NUnit tests headlessly in Docker containers, blocking merges on test regressions.
+- **Continuous Deployment (CD):** Merges to `main` automatically produce a WebGL production build and publish it directly to GitHub Pages.
+- **Fast Build Times:** Intelligent caching of Unity's `Library/` directory reduces CI runtimes by over 70%.
+
+📘 **Comprehensive Setup Guide:**  
+For complete instructions on configuring Unity licenses (`.alf`/`.ulf`), GitHub repository secrets, workflow permissions, and troubleshooting tips, see the [CI/CD Setup Guide](./docs/CI_CD_SETUP_GUIDE.md).
+
+---
+
+## ⚙️ Quick CI/CD Setup Reference
 
 - **CI Workflow:** [`.github/workflows/unity-tests.yml`](.github/workflows/unity-tests.yml) — Runs EditMode tests on pull requests & branches.
-- **CD Workflow:** [`.github/workflows/unity-build.yml`](.github/workflows/unity-build.yml) — Gated WebGL build & automated GitHub Pages deployment triggered on `main`/`master` pushes.
+- **CD Workflow:** [`.github/workflows/unity-build.yml`](.github/workflows/unity-build.yml) — Gated WebGL build & automated GitHub Pages deployment.
 
-### Setting up GitHub Secrets & GitHub Pages:
-1. **GitHub Secrets:** Navigate to **Settings > Secrets and variables > Actions** in your GitHub repository and add:
-   - `UNITY_LICENSE`: (Optional/Recommended for personal license activation via `.ulf` file).
+### Required GitHub Secrets:
+1. Navigate to **Settings > Secrets and variables > Actions** in your GitHub repository and add:
+   - `UNITY_LICENSE`: The XML content of your activated Unity `.ulf` file.
    - `UNITY_EMAIL`: Your Unity account email.
    - `UNITY_PASSWORD`: Your Unity account password.
-2. **GitHub Pages:** Navigate to **Settings > Pages** in your repository and configure **Build and deployment > Source** to **Deploy from a branch (`gh-pages` / `root`)**.
+2. Navigate to **Settings > Actions > General > Workflow permissions** and select **Read and write permissions**.
+3. Navigate to **Settings > Pages** and set **Source** to **Deploy from a branch (`gh-pages` / `root`)**.
